@@ -67,22 +67,22 @@ Joris Van den Bossche
 
 ---
 
-# About Patrick
+# About Richard
 
-Patrick Hoefler
+Richard Shadrach
 <div style="margin-bottom:-20px"></div>
 
-- Background: M.Sc. in Mathematics
+- Background: Ph.D. in Mathematics
 - Open source: pandas core dev
-- Currently working at Coiled on Dask
+- Currently working at 84.51˚
 
-https://github.com/phofl Website: https://phofl.github.io
+https://github.com/rhshadrach
 
 
 .center[
 .affiliations[
-  ![:scale 35%](img/dask.png)
-  ![:scale 30%](img/coiled.png)
+  ![:scale 35%](img/8451.png)
+  ![:scale 30%](img/kroger.png)
 ]
 ]
 ---
@@ -996,12 +996,16 @@ See "PDEP-1: Purpose and guidelines" for the details: https://pandas.pydata.org/
 --
 count: false
 
-Currently open PDEPs (https://pandas.pydata.org/about/roadmap.html):
+Accepted PDEPs (https://pandas.pydata.org/about/roadmap.html):
 
 * PDEP-6: Ban upcasting in setitem-like operations
+* PDEP-10: PyArrow as a required dependency for default string inference implementation
+
+Currently open PDEPs:
+
 * PDEP-7: Consistent copy/view semantics in pandas with Copy-on-Write
 * PDEP-8: Inplace methods in pandas
-* PDEP-9: Allow third-party projects to register pandas connectors with a standard API
+* PDEP-11: Change the default of dropna to False
 
 ---
 
@@ -1025,6 +1029,36 @@ df = df.reset_index()
 ```
 
 Full proposal: https://github.com/pandas-dev/pandas/pull/51466
+
+---
+
+# PDEP-11: Change the default of dropna to False
+
+Motivating Example: Compute the average time for groups of 3 runners.
+
+```python
+df = pd.read_parquet('runner_times.parquet')
+df
+df.value_counts('group')
+df.value_counts('group').value_counts()
+result = df.groupby('group')[['seconds']].mean()
+result
+result.to_excel("group_means.xlsx")
+```
+
+Proposal (still being discussed!):
+
+- Change all `dropna` arguments in pandas to default to `False`
+
+Not as simple as it sounds:
+
+- Some methods (`stack`, `pivot_table`) do not behave well with `dropna=False`
+  - You can try the new implementation of `stack` in version 2.1!
+- What should we do with `mode`?
+  - If `mode` is counting values, then it should have `dropna=False`.
+  - If `mode` is a stats method like `mean` and `median`, then it should have `skipna=True`
+
+Full proposal: https://github.com/pandas-dev/pandas/pull/53094
 
 ---
 

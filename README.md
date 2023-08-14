@@ -1,9 +1,11 @@
-# pydata-berlin
+# EuroScipy 2023 - pandas 2.0 and beyond
 
-pandas 2.0 and beyond - Copy-on-Write, Arrow-backed DataFrames and more
+pandas 2.0 and beyond - Copy-on-Write, Arrow-backed string dtype and more
 
-Joris Van den Bossche (Voltron Data), Patrick Hoefler (Coiled)
+Joris Van den Bossche (Voltron Data), Richard Shadrach (84.51˚)
 
-PyConDE & PyData Berlin, April 17, 2023
+EuroScipy, August 16, 2023
 
-Slides: https://phofl.github.io/pydata-berlin/pydata-berlin-2023/intro.html#1
+Slides: https://jorisvandenbossche.github.io/euroscipy-2023-pandas/#1
+
+Updated slides from PyData Berlin talk at https://github.com/phofl/pydata-berlin/

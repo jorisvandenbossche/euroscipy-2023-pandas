@@ -693,13 +693,137 @@ pd.options.mode.copy_on_write = True
 ---
 class: center, middle
 
-# Arrow-backed DataFrames
+# PDEP-10: PyArrow as a required dependency for default string inference implementation
 
 ---
 
+## Avoid object dtype for strings by default
+
+Currently:
+
+```python
+>>> pd.Series(["a", "b", "c"])
+0    a
+1    b
+2    c
+dtype: `object`
+```
+
+--
 count: false
 
-# Arrow-backed DataFrames
+Future behaviour:
+
+```python
+>>> pd.options.future.infer_string = True
+>>> pd.Series(["a", "b", "c"])
+0    a
+1    b
+2    c
+dtype: `string[pyarrow]`
+```
+
+Planned for 3.0 by default, but you can already opt-in starting with pandas 2.1
+
+---
+
+## PyArrow-backed string dtype
+
+PyArrow offers fast and efficient in-memory string operations.
+
+This provides:
+
+- significantly improved performance compared to NumPy's object dtype with Python `str` operations
+- smaller memory footprint
+
+--
+count: false
+
+- compatible with existing object-dtype-based string methods (all `.str.` string accessor methods keep working)
+
+---
+
+## Let's look at some performance/memory comparisons
+
+```python
+import string
+import random
+
+import pandas as pd
+
+
+def random_string() -> str:
+    return "".join(random.choices(string.printable, k=random.randint(10, 100)))
+
+
+ser_object = pd.Series([random_string() for _ in range(1_000_000)])
+ser_string = ser_object.astype("string[pyarrow]")
+```
+
+---
+
+## Let's look at some performance/memory comparisons
+
+### str.length
+
+```python
+In[1]: %timeit ser_object.str.len()
+118 ms ± 260 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+In[2]: %timeit ser_string.str.len()
+*24.2 ms ± 187 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+```
+
+--
+count: false
+
+### str.startswith
+
+```python
+In[3]: %timeit ser_object.str.startswith("a")
+136 ms ± 300 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+In[4]: %timeit ser_string.str.startswith("a")
+*11 ms ± 19.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+
+```
+
+---
+
+## Let's look at some performance/memory comparisons
+
+### memory footprint
+
+```python
+In [5]: "{:.2f} MiB".format(ser_object.memory_usage(deep=True) / 1024**2)
+Out[5]: '106.82 MiB'
+
+In [6]: "{:.2f} MiB".format(ser_string.memory_usage(deep=True) / 1024**2)
+*Out[6]: '56.28 MiB'
+```
+
+---
+
+## PyArrow-backed string dtype by default in 3.0
+
+* PyArrow will become a **required** dependency of pandas starting with pandas 3.0
+* The PyArrow-backed string dtype will be used by default for string columns (no more object dtype for strings!)
+
+
+### How do I try this now?
+
+Enable it in pandas 2.1:
+
+```python
+pd.options.future.infer_string = True
+```
+
+* https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b
+
+
+---
+
+# Arrow-backed data types
 
 Using PyArrow arrays to store the data of a DataFrame.
 .center[
@@ -709,7 +833,6 @@ Using PyArrow arrays to store the data of a DataFrame.
  _ __Apache Arrow__ defines a language-independent columnar memory format for flat and hierarchical data, organized_
 _for efficient analytic operations on modern hardware like CPUs and GPUs._
 
-.larger[&rarr;] Check out Joris [talk about Arrow](https://pretalx.com/pyconde-pydata-berlin-2023/talk/H7ZCWK/) on Wednesday!
 ---
 
 ## ArrowDtype
@@ -741,40 +864,7 @@ These columns use the PyArrow memory layout and compute functionality.
 
 ---
 
-## Dispatching to pyarrow.compute
-
-The ExtensionArray interface of pandas dispatches to
-[compute functions of PyArrow](https://arrow.apache.org/docs/python/compute.html).
-
-```python
-In [3]: ser = pd.Series(np.random.randint(1, 100, (5_000_000, )))
-```
---
-count: false
-```python
-In [4]: %timeit ser.unique()
-10.6 ms ± 31.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-```
---
-count: false
-
-```python
-In [5]: ser_arrow = ser.astype(pd.ArrowDtype(pa.int64()))
-
-In [6]: %timeit ser_arrow.unique()
-*6.71 ms ± 6.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-```
-
---
-count: false
-
-.larger[&rarr;] PyArrow can provide a significant performance improvement
-
-Not every method of pandas supports the compute functionality of PyArrow yet.
-
----
-
-## PyArrow dtypes
+## Arrow-backed data types
 
 PyArrow offers support for a wide variety of dtypes.
 
@@ -799,87 +889,6 @@ count: false
 count: false
 
 - Bytes, decimal, explicit null-datatype, nested data and [many more](https://arrow.apache.org/docs/python/api/datatypes.html#data-types-and-schemas).
-
----
-
-
-## PyArrow string dtype
-
-PyArrow offers fast and efficient in-memory string operations.
-
-pandas implements PyArrow-based string operations through `"string[pyarrow]"` or `pd.ArrowDtype(pa.string())`.
-
---
-count: false
-
-These implementations provide
-
-- significantly improved performance compared to NumPy's object dtype
-- smaller memory footprint
-
----
-
-## Let's look at some performance/memory comparisons
-
-```python
-import string
-import random
-
-import pandas as pd
-
-
-def random_string() -> str:
-    return "".join(random.choices(string.printable, k=random.randint(10, 100)))
-
-
-ser_object = pd.Series([random_string() for _ in range(1_000_000)])
-ser_string = ser_object.astype("string[pyarrow]")
-```
-
----
-
-## Let's look at some performance/memory comparisons
-
---
-count: false
-
-### str.length
-
-```python
-In[1]: %timeit ser_object.str.len()
-118 ms ± 260 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-
-In[2]: %timeit ser_string.str.len()
-*24.2 ms ± 187 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-```
-
---
-count: false
-
-### str.startswith
-
-```python
-In[3]: %timeit ser_object.str.startswith("a")
-136 ms ± 300 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-
-In[4]: %timeit ser_string.str.startswith("a")
-*11 ms ± 19.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-
-```
-
----
-count: false
-## Let's look at some performance/memory comparisons
-
-### memory footprint
-
-```python
-In [5]: "{:.2f} MiB".format(ser_object.memory_usage(deep=True) / 1024**2)
-Out[5]: '106.82 MiB'
-
-In [6]: "{:.2f} MiB".format(ser_string.memory_usage(deep=True) / 1024**2)
-*Out[6]: '56.28 MiB'
-```
 
 ---
 ## Opting into Arrow-backed DataFrames

@@ -628,105 +628,6 @@ pd.options.future.infer_string = True
 
 ---
 
-# Arrow-backed data types
-
-Using PyArrow arrays to store the data of a DataFrame.
-.center[
-![:scale 100%](img/pandas_arrow.svg)
-]
-
- _ __Apache Arrow__ defines a language-independent columnar memory format for flat and hierarchical data, organized_
-_for efficient analytic operations on modern hardware like CPUs and GPUs._
-
----
-
-## ArrowDtype
-
-`pd.ArrowDtype` or `f"{dtype}[pyarrow]"` creates Arrow-backed columns
-
---
-count: false
-
-```python
->>> import pyarrow as pa
->>> pd.Series([1, 2, 3], dtype=pd.ArrowDtype(pa.int64()))
-0   1
-1   2
-2   3
-dtype: `int64[pyarrow]`
-
->>> pd.Series([1, 2, 3], dtype="int64[pyarrow]")
-0   1
-1   2
-2   3
-dtype: `int64[pyarrow]`
-```
-
---
-count: false
-
-These columns use the PyArrow memory layout and compute functionality.
-
----
-
-## Arrow-backed data types
-
-PyArrow offers support for a wide variety of dtypes.
-
---
-count: false
-
-.larger[Benefits]
-
-- Support of missing value indicators in every datatype
-
-```python
->>> pd.Series([1, None], dtype="int64[pyarrow]")
-0       1
-1    <NA>
-dtype: int64[pyarrow]
-```
---
-count: false
-- An efficient string-datatype implementation
-
---
-count: false
-
-- Bytes, decimal, explicit null-datatype, nested data and [many more](https://arrow.apache.org/docs/python/api/datatypes.html#data-types-and-schemas).
-
----
-## Opting into Arrow-backed DataFrames
-
-Most I/O methods gained a new `dtype_backend` keyword to convert  the input data to Arrow datatypes during reading.
-
---
-count: false
-
-```python
->>> data = """a,b,c\n1,1.5,x\n,2.5,y"""
-
->>> df = pd.read_csv(StringIO(data), dtype_backend="pyarrow")
->>> df
-      a    b  c
-0     1  1.5  x
-1  <NA>  2.5  y
-
->>> df.dtypes
-a     int64[pyarrow]
-b    double[pyarrow]
-c    string[pyarrow]
-dtype: object
-```
-
---
-count: false
-
-`.convert_dtypes(dtype_backend="pyarrow")` can be used, if a function does not support the `dtype_backend` keyword yet.
-
----
-
-
 ## Speeding up I/O operations with PyArrow engine
 
 Some I/O functions gained an `engine` keyword to parse the input with PyArrow.
@@ -749,41 +650,48 @@ count: false
 
 ---
 
-## WARNING: Arrow support is still experimental
+## Arrow-backed data types
 
-It is still early in adopting PyArrow dtypes and PyArrow-backed DataFrames.
+Using PyArrow arrays to store the data of a DataFrame.
+.center[
+![:scale 100%](img/pandas_arrow.svg)
+]
 
---
-count: false
-
-.larger[This means:]
-
-- The Arrow-backend is not yet supported everywhere.
-  - Can lead to performance problems
-  - Potential bugs
-  - `GroupBy` and `merge` are popular examples.
-
---
-count: false
-
-- Potential upstream bugs in Arrow itself that aren't addressed yet.
+ _ __Apache Arrow__ defines a language-independent columnar memory format for flat and hierarchical data, organized_
+_for efficient analytic operations on modern hardware like CPUs and GPUs._
 
 ---
 
-## Roadmap for PyArrow support
+## Arrow-backed data types
+
+PyArrow offers support for a wide variety of dtypes (not well supported by pandas right now): 
+
+* string, bytes, decimal, date, explicit null-datatype, nested data and [many more](https://arrow.apache.org/docs/python/api/datatypes.html#data-types-and-schemas).
 
 --
 count: false
 
-* pandas will continue working on supporting PyArrow everywhere.<br>
-  This goal is reached when PyArrow-dtypes and NumPy-dtypes are both equally well supported.<br>
-  Ensure support for new available dtypes (Decimal, bytes, ...).
+.larger[Experimental `ArrowDtype` for using any Arrow type in a column]
+
+```python
+>>> import pyarrow as pa
+>>> pd.Series([1, 2, 3], dtype=pd.ArrowDtype(pa.int64()))
+0   1
+1   2
+2   3
+dtype: `int64[pyarrow]`
+```
+
+These columns use the PyArrow memory layout and compute functionality.
 
 --
 count: false
 
-* Provide a way for users to opt into PyArrow-backed DataFrames globally.
+➔ opt-in using new `dtype_backend="pyarrow"` keyword in IO methods, or `df.convert_dtypes(dtype_backend="pyarrow")` to convert afterwards
 
+???
+
+Warning: experimental!
 
 ---
 

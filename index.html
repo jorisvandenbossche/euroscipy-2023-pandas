@@ -101,6 +101,7 @@ See PDEPs on the pandas roadmap: https://pandas.pydata.org/about/roadmap.html
 * PDEP-10 [*Accepted for 3.0* ]: PyArrow as a required dependency for default string inference implementation
 * PDEP-11 [*Open* ]: Change the default of dropna to False
 
+???
 Other new pandas 2.0 features:
 
 - Non-nanosecond datetime resolutions
@@ -612,7 +613,7 @@ In [6]: "{:.2f} MiB".format(ser_string.memory_usage(deep=True) / 1024**2)
 ## PyArrow-backed string dtype by default in 3.0
 
 * PyArrow will become a **required** dependency of pandas starting with pandas 3.0
-* The PyArrow-backed string dtype will be used by default for string columns (no more object dtype for strings!)
+* The PyArrow-backed string dtype will be used by default (no more object dtype for strings!)
 
 
 ### How do I try this now?
@@ -623,7 +624,8 @@ Enable it in pandas 2.1:
 pd.options.future.infer_string = True
 ```
 
-* https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b
+* PDEP: https://pandas.pydata.org/pdeps/0010-required-pyarrow-dependency.html
+* Blogpost of Patrick Höfler about improvements in pandas and dask: https://towardsdatascience.com/utilizing-pyarrow-to-improve-pandas-and-dask-workflows-2891d3d96d2b
 
 
 ---
@@ -635,18 +637,7 @@ Some I/O functions gained an `engine` keyword to parse the input with PyArrow.
 - `read_csv` and `read_json` can dispatch to PyArrow readers.
 - `read_parquet` and `read_orc` use PyArrow natively to read the input.
 
-???
-
-Mention that engine works without the pandas backend as well
-
---
-count: false
-
-.larger[Benefits]
-
-- Huge [performance improvements](https://datapythonista.me/blog/pandas-with-hundreds-of-millions-of-rows)
-- Multithreading
-- Zero-copy when using Arrow-backed DataFrames
+➔ Huge [performance improvements](https://datapythonista.me/blog/pandas-with-hundreds-of-millions-of-rows) and uses multithreading
 
 ---
 

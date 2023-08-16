@@ -74,9 +74,9 @@ Joris Van den Bossche
 Richard Shadrach
 <div style="margin-bottom:-20px"></div>
 
-- Background: Ph.D. in Mathematics
+- Background: Ph.D. in Mathematics [Arithmetic Geometry]
 - Open source: pandas core dev
-- Currently working at 84.51˚
+- Director of Data Science at 84.51˚ specializing in large-scale optimization
 
 https://github.com/rhshadrach
 
@@ -91,7 +91,7 @@ https://github.com/rhshadrach
 
 ## Pandas Enhancement Proposals (PDEPs)
 
-A PDEP is a proposal for a major change in pandas, similar to a Python NEP or a NumPy NEP.
+A PDEP is a proposal for a major change in pandas, similar to a Python PEP or a NumPy NEP.
 See PDEPs on the pandas roadmap: https://pandas.pydata.org/about/roadmap.html
 
 * PDEP-4 [Implemented]: Consistent datetime parsing
@@ -282,15 +282,7 @@ Images from https://www.dataquest.io/blog/settingwithcopywarning/
 
 Images from https://www.dataquest.io/blog/settingwithcopywarning/
 
----
 
-# Current situation
-
-Problems with the current copy / view semantics of pandas:
-
-- This is confusing for many users
-- You need to be aware of copy/view details of numpy
-- You need defensive (and unncecessary) copying to avoid the warning
 
 
 ???
@@ -313,9 +305,9 @@ count: false
 I want do update `df` -> setitem in one go
 
 ```python
->>> df["C"][df["A"] > 1] = 10  # this works
 >>> df[df["A"] > 1]["C"] = 10      # this doesn't work
->>> df`.loc[df["A"] > 1, "C"]` = 10  # this works
+>>> df["C"][df["A"] > 1] = 10      # this works
+>>> df.loc[df["A"] > 1, "C"] = 10  # this works
 ```
 
 --
@@ -335,8 +327,8 @@ I don't want to update `df` -> explicit (unnecessary) `copy()`
 Problems with the current copy / view semantics of pandas:
 
 - This is confusing for many users
-- You need to be aware of copy/view details of numpy
-- **You need defensive (and unncecessary) copying to avoid the warning**
+- You need to be aware of copy/view details of NumPy
+- You need defensive (and unnecessary) copying to avoid the warning
 
 ---
 
@@ -351,7 +343,7 @@ count: false
 
 Or put differently, the implication is:
 
-> *Mutating a DataFrame only changes the object itself, and not any other.*
+> *Mutating a DataFrame or Series only changes the object itself, and not any other.*
 
 > *If you want to change values in a DataFrame or Series, you can only do that by directly mutating the DataFrame/Series at hand*.
 
@@ -366,24 +358,9 @@ A proposal for simplified behaviour using a single rule:
 
 Advantages:
 
-- A simpler, more consistent user experience
-- We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
-
----
-count: false
-
-# Can we do better?
-
-A proposal for simplified behaviour using a single rule:
-
-> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always *behaves as* a copy.*
-
-Advantages:
-
 - .section-highlight[A simpler, more consistent user experience]
 - We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
+- We would no longer need defensive copying in many places in pandas, improving memory usage and performance
 
 ---
 
@@ -416,7 +393,7 @@ Advantages:
 
 - A simpler, more consistent user experience
 - .section-highlight[We can get rid of the SettingWithCopyWarning] (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
+- We would no longer need defensive copying in many places in pandas, improving memory usage and performance
 
 ---
 
@@ -470,6 +447,20 @@ But to help the transition, we can specifically warn about chained assignment no
 
 ---
 
+# Can we do better?
+
+A proposal for simplified behaviour using a single rule:
+
+> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always behaves as a copy.*
+
+Advantages:
+
+- A simpler, more consistent user experience
+- We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
+- .section-highlight[We would no longer need defensive copying in many places in pandas, improving memory usage and performance]
+
+---
+
 # The SettingWithCopyWarning
 
 With current pandas (not wanting to update `df`):
@@ -482,20 +473,6 @@ With current pandas (not wanting to update `df`):
 ```
 
 With new behaviour: additional `copy()` is no longer needed to avoid the warning.
-
----
-
-# Can we do better?
-
-A proposal for simplified behaviour using a single rule:
-
-> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always *<span class="remark-code-span-highlighted">behaves as</span>* a copy.*
-
-Advantages:
-
-- A simpler, more consistent user experience
-- We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- .section-highlight[We would no longer need defensive copying in many places in pandas, improving memory usage]
 
 ---
 
@@ -895,9 +872,8 @@ Full proposal: https://github.com/pandas-dev/pandas/pull/51466
 Motivating Example: Compute the average time for groups of 3 runners.
 
 ```python
-df = pd.read_parquet("runner_times.parquet")
+df = pd.read_excel("runner_times.xlsx")
 df.value_counts("group")
-df.value_counts("group").unique()
 result = df.groupby("group")[["seconds"]].mean()
 result.to_excel("group_means.xlsx")
 ```

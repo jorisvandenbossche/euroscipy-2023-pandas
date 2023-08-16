@@ -303,8 +303,8 @@ count: false
 I want do update `df` -> setitem in one go
 
 ```python
->>> df["C"][df["A"] > 1] = 10      # this works
 >>> df[df["A"] > 1]["C"] = 10      # this doesn't work
+>>> df["C"][df["A"] > 1] = 10      # this works
 >>> df.loc[df["A"] > 1, "C"] = 10  # this works
 ```
 
@@ -341,7 +341,7 @@ count: false
 
 Or put differently, the implication is:
 
-> *Mutating a DataFrame only changes the object itself, and not any other.*
+> *Mutating a DataFrame or Series only changes the object itself, and not any other.*
 
 > *If you want to change values in a DataFrame or Series, you can only do that by directly mutating the DataFrame/Series at hand*.
 
@@ -356,24 +356,9 @@ A proposal for simplified behaviour using a single rule:
 
 Advantages:
 
-- A simpler, more consistent user experience
-- We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
-
----
-count: false
-
-# Can we do better?
-
-A proposal for simplified behaviour using a single rule:
-
-> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always *behaves as* a copy.*
-
-Advantages:
-
 - .section-highlight[A simpler, more consistent user experience]
 - We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
+- We would no longer need defensive copying in many places in pandas, improving memory usage and performance
 
 ---
 
@@ -406,7 +391,7 @@ Advantages:
 
 - A simpler, more consistent user experience
 - .section-highlight[We can get rid of the SettingWithCopyWarning] (since there is no confusion about whether we are mutating a view or a copy)
-- We would no longer need defensive copying in many places in pandas, improving memory usage
+- We would no longer need defensive copying in many places in pandas, improving memory usage and performance
 
 ---
 
@@ -464,13 +449,13 @@ But to help the transition, we can specifically warn about chained assignment no
 
 A proposal for simplified behaviour using a single rule:
 
-> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always *<span class="remark-code-span-highlighted">behaves as</span>* a copy.*
+> *Any DataFrame or Series derived from another in any way (e.g. with an indexing operation) always behaves as a copy.*
 
 Advantages:
 
 - A simpler, more consistent user experience
 - We can get rid of the SettingWithCopyWarning (since there is no confusion about whether we are mutating a view or a copy)
-- .section-highlight[We would no longer need defensive copying in many places in pandas, improving memory usage]
+- .section-highlight[We would no longer need defensive copying in many places in pandas, improving memory usage and performance]
 
 ---
 

@@ -94,12 +94,12 @@ https://github.com/rhshadrach
 A PDEP is a proposal for a major change in pandas, similar to a Python PEP or a NumPy NEP.
 See PDEPs on the pandas roadmap: https://pandas.pydata.org/about/roadmap.html
 
-* PDEP-4 [Implemented]: Consistent datetime parsing
-* PDEP-6 [Accepted]: Ban upcasting in setitem-like operations
-* PDEP-7 [Open]: Consistent copy/view semantics in pandas with Copy-on-Write
-* PDEP-8 [Open]: Inplace methods in pandas
-* PDEP-10 [Accepted]: PyArrow as a required dependency for default string inference implementation
-* PDEP-11 [Open]: Change the default of dropna to False
+* PDEP-4 [*Implemented in 2.0* ]: Consistent datetime parsing
+* PDEP-6 [*Accepted for 3.0* ]: Ban upcasting in setitem-like operations
+* PDEP-7 [*Open, planned for 3.0* ]: Consistent copy/view semantics with Copy-on-Write
+* PDEP-8 [*Open, planned for 3.0?* ]: Inplace methods in pandas
+* PDEP-10 [*Accepted for 3.0* ]: PyArrow as a required dependency for default string inference implementation
+* PDEP-11 [*Open* ]: Change the default of dropna to False
 
 Other new pandas 2.0 features:
 
@@ -116,9 +116,6 @@ count: false
 
 .larger[&rarr;] Only dates between 1677 and 2262 can be represented
 
---
-count: false
-
 ```python
 >>> pd.Timestamp("1000-01-01")
 OutOfBoundsDatetime: Out of bounds nanosecond timestamp: 1000-01-01 00:00:00
@@ -129,9 +126,6 @@ OutOfBoundsDatetime: Out of bounds nanosecond timestamp: 1000-01-01 00:00:00
 count: false
 
 pandas 2.0 lifts this restriction!
-
---
-count: false
 
 Timestamps can be created in the following units:
 
@@ -145,26 +139,17 @@ Timestamps can be created in the following units:
 
 `date_range` doesn't yet support non-nano resolutions. But `as_unit` or `astype` can be used to convert between units:
 
---
-count: false
-
 ```python
 >>> dr = pd.date_range("2020-01-01", periods=3, freq="D")
 >>> dr
 DatetimeIndex(['2020-01-01', '2020-01-02'], dtype=`'datetime64[ns]'`, freq='D')
 ```
+
 --
 count: false
 
 ```python
->>> dr.as_unit("s")
-DatetimeIndex(['2020-01-01', '2020-01-02'], dtype=`'datetime64[s]'`, freq='D')
-```
---
-count: false
-
-```python
->>> dr.astype("datetime64[s]")
+>>> dr.`astype("datetime64[s]")`
 DatetimeIndex(['2020-01-01', '2020-01-02'], dtype=`'datetime64[s]'`, freq='D')
 ```
 
@@ -187,26 +172,6 @@ array(['2007-07-13T00:00:00.000', '2006-01-13T00:00:00.000'], dtype=`'datetime64
 1   2006-01-13
 dtype: `datetime64[ms]`
 ```
-
----
-
-## Some caveats
-
---
-count: false
-
-- Non-nanosecond support is still new and is actively developed!
-
---
-count: false
-
-- Not every part of the API support non-nanosecond resolutions yet (`date_range`).
-
---
-count: false
-
-- Comparing two arrays with differing resolutions is still relatively slow.
-
 
 ---
 
